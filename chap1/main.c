@@ -2,6 +2,7 @@
 #include "slp.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int max(int a, int b) {
     if(a > b) return a;
@@ -62,10 +63,83 @@ struct IntAndTable interpExp(A_exp s, Table_ t);
 
 /*End of Interpret statment part*/
 
+/*Exercise*/
+
+typedef struct tree* T_tree;
+struct tree {
+    T_tree left; 
+    string key; 
+    void *bind;
+    T_tree right;
+};
+
+T_tree Tree(T_tree l, string k, void *binding, T_tree r) {
+    T_tree t = checked_malloc(sizeof(*t));
+    t->left = l;
+    t->key = k;
+    t->bind = binding;
+    t->right = r;
+    return t;
+}
+
+T_tree insert(string key, void *binding, T_tree t) {
+    if(t == NULL) return Tree(NULL, key, binding, NULL);
+
+    if(strcmp(key, t->key) == 0) {
+        return Tree(t->left, key, binding, t->right);        
+    } else if(strcmp(key, t->key) > 0) {
+        return Tree(t->left, t->key, t->bind, insert(key, binding, t->right));
+    } else {
+        return Tree(insert(key, binding, t->left), t->key, t->bind, t->right);
+    }
+}
+
+bool member(string key, T_tree t) {
+    if(t == NULL) return FALSE;
+
+    if(strcmp(key, t->key) == 0) return TRUE;
+    else if(strcmp(key, t->key) > 0) return member(key, t->right); 
+    else return member(key, t->left);
+}
+
+void *lookup_tree(string key, T_tree t) {
+    if(t == NULL) return NULL;
+
+    if(strcmp(key, t->key) == 0) {
+        return t->bind;
+    } else if(strcmp(key, t->key) > 0) {
+        return lookup_tree(key, t->right);
+    } else return lookup_tree(key, t->left);
+}
+
+void print_left(T_tree t) {
+    if(t == NULL) return;
+    printf("%s\n", t->key);
+    print_left(t->left);
+}
+
+void print_right(T_tree t) {
+    if(t == NULL) return;
+    printf("%s\n", t->key);
+    print_right(t->right);
+}
+
+/* End of Exercise */
+
 int main() {
-    A_stm myprog = prog();    
-    Table_ t = NULL;
-    interpStm(myprog, t);
+    T_tree tree = insert("t", NULL, NULL);
+    tree = insert("s", NULL, tree);
+    tree = insert("p", NULL, tree);
+    tree = insert("i", NULL, tree);
+    tree = insert("p", NULL, tree);
+    tree = insert("f", NULL, tree);
+    tree = insert("b", NULL, tree);
+    tree = insert("s", NULL, tree);
+    tree = insert("t", NULL, tree);
+
+    if(member("t", tree) == TRUE) {
+        printf("Found!\n");
+    } else printf("Not Found!\n");
 }
 
 int count_stm(A_stm mystm) {
